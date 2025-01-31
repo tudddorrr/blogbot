@@ -34,17 +34,25 @@ export default function Home() {
   }, [])
 
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleGenerate = async () => {
     setIsLoading(true)
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      body: JSON.stringify({ systemPrompt, prompt, referenceLinks, codeLinks, linksToInclude }),
-    })
-    const data = await response.json()
-    setOutput(data.output)
-    setIsLoading(false)
-    window.scrollTo(0, document.body.scrollHeight)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ systemPrompt, prompt, referenceLinks, codeLinks, linksToInclude }),
+      })
+      const data = await response.json()
+      setOutput(data.output)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An unknown error occurred')
+    } finally {
+      setIsLoading(false)
+      window.scrollTo(0, document.body.scrollHeight)
+    }
   }
 
   return (
@@ -237,6 +245,12 @@ export default function Home() {
           <Button onClick={handleGenerate} disabled={isLoading}>
             {isLoading ? 'Generating...' : 'Generate'}
           </Button>
+
+          {error && (
+            <div className="text-red-500">
+              {error}
+            </div>
+          )}
 
           {output && (
             <div className="grid gap-2">

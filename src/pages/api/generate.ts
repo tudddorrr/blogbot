@@ -14,6 +14,10 @@ export type Link = {
   description: string
 }
 
+export const config = {
+  maxDuration: 60
+}
+
 async function formatReferenceMaterials(subject: string, links: Link[]) {
   const summaries = await generateReferenceMaterials(subject, links)
   return summaries.length > 0 

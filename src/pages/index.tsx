@@ -19,6 +19,15 @@ const initialSystemPrompt = [
   'The blog post content should be SEO optimised and include relevant keywords without sacrificing readability or any of the style rules.'
 ].join('\n')
 
+// Add interface for configuration
+interface BlogConfig {
+  systemPrompt: string
+  prompt: string
+  referenceLinks: Link[]
+  codeLinks: Link[]
+  linksToInclude: Link[]
+}
+
 export default function Home() {
   const [systemPrompt, setSystemPrompt] = useLocalStorage('systemPrompt', initialSystemPrompt)
   const [prompt, setPrompt] = useLocalStorage('prompt', '')
@@ -53,6 +62,55 @@ export default function Home() {
       setIsLoading(false)
       window.scrollTo(0, document.body.scrollHeight)
     }
+  }
+
+  const handleExport = () => {
+    const config: BlogConfig = {
+      systemPrompt,
+      prompt,
+      referenceLinks,
+      codeLinks,
+      linksToInclude
+    }
+    
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'blogbot-config.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const config: BlogConfig = JSON.parse(e.target?.result as string)
+        setSystemPrompt(config.systemPrompt)
+        setPrompt(config.prompt)
+        setReferenceLinks(config.referenceLinks)
+        setCodeLinks(config.codeLinks)
+        setLinksToInclude(config.linksToInclude)
+      } catch (error) {
+        setError(`Failed to parse configuration file: ${error}`)
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleClear = () => {
+    setSystemPrompt(initialSystemPrompt)
+    setPrompt('')
+    setReferenceLinks([])
+    setCodeLinks([])
+    setLinksToInclude([])
+    setOutput('')
   }
 
   return (
@@ -242,9 +300,31 @@ export default function Home() {
             </div>
           </div>
 
-          <Button onClick={handleGenerate} disabled={isLoading}>
-            {isLoading ? 'Generating...' : 'Generate'}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleGenerate} disabled={isLoading}>
+              {isLoading ? 'Generating...' : 'Generate'}
+            </Button>
+            
+            <Button variant="outline" onClick={handleExport}>
+              Export config
+            </Button>
+            
+            <Button variant="outline" asChild>
+              <label>
+                Import config
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={handleImport}
+                />
+              </label>
+            </Button>
+
+            <Button variant="outline" onClick={handleClear}>
+              Clear form
+            </Button>
+          </div>
 
           {error && (
             <div className="text-red-500">

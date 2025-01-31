@@ -51,7 +51,8 @@ export async function generateStructurePrompt(linksToInclude: Link[]) {
       `<frontmatter_rules>${await generateFrontmatterRules()}</frontmatter_rules>`,
       '3. Mark out potential sections for images and videos within the mdx code. These will be replaced with actual images and videos later.',
       '4. You should include the following links in the post:',
-      `<links_to_include>${linksToInclude.map((link) => `- ${link.description}: ${link.url}`).join('\n')}</links_to_include>`
+      `<links_to_include>${linksToInclude.map((link) => `- ${link.description}: ${link.url}`).join('\n')}</links_to_include>`,
+      '5. Ensure to include some larger paragraphs of text in the post to enrich the content.'
     ].join('\n')
 
     return generatePrompt

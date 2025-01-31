@@ -19,7 +19,6 @@ const initialSystemPrompt = [
   'The blog post content should be SEO optimised and include relevant keywords without sacrificing readability or any of the style rules.'
 ].join('\n')
 
-// Add interface for configuration
 interface BlogConfig {
   systemPrompt: string
   prompt: string
